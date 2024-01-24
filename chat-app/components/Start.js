@@ -1,15 +1,29 @@
 import { useState } from 'react';
 import React from 'react';
-import { ImageBackground, StyleSheet, View, Text, TextInput, Button, Image, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { ImageBackground, StyleSheet, View, Text, TextInput, Alert, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+
+import { getAuth, signInAnonymously, getReactNativePersistence } from "firebase/auth";
 
 const Start = ({ navigation }) => {
     const [name, setName] = useState('');
     const [background, setBackground] = useState('');
-    const Background = require('../assets/Background-Image.png')
+    const StartImage = require('../assets/Background-Image.png');
 
+    const auth = getAuth()
+
+    const signInUser = () => {
+        signInAnonymously(auth)
+            .then(result => {
+                navigation.navigate('Chat', { name: name, background: background, userID: result.user.uid })
+                Alert.alert('Signed in Successfully!')
+            })
+            .catch((error) => {
+                Alert.alert('Unable to sign in, try later again.')
+            })
+    }
 
     return (
-        <ImageBackground source={Background} style={styles.image}>
+        <ImageBackground source={StartImage} resizeMode="cover" style={styles.image}>
             {/* app title: */}
             <Text style={styles.title}>Chat App</Text>
 
@@ -65,17 +79,13 @@ const Start = ({ navigation }) => {
                 {/* button to start chatting, links to chat.js */}
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => {
-                        navigation.navigate("Chat", {
-                            name: name,
-                            color: background,
-                        });
-                    }}
+                    onPress={signInUser}
                 >
                     <Text style={styles.buttonText}>Start Chatting</Text>
                 </TouchableOpacity>
                 {/* {console.log(username)} */}
             </View>
+            {Platform.OS === 'ios' ? <KeyboardAvoidingView behavior="height" /> : null}
         </ImageBackground>
     );
 };
@@ -83,13 +93,13 @@ const Start = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'space-evenly',
         alignItems: 'center',
     },
     image: {
         flex: 1,
-        width: '100%',
-        height: '100%',
+        width: '100vh',
+        height: '100vh',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -121,6 +131,8 @@ const styles = StyleSheet.create({
         fontWeight: "300",
         color: "#757083",
         opacity: 0.5,
+        borderWidth: 1,
+
     },
     chooseBackgroundText: {
         fontSize: 16,
@@ -141,7 +153,7 @@ const styles = StyleSheet.create({
     colorButton: {
         width: 50,
         height: 50,
-        borderRadius: 50/2,
+        borderRadius: 50 / 2,
     },
     colorInput1: {
         backgroundColor: "#090C08",

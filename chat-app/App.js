@@ -1,26 +1,28 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { LogBox } from 'react-native';
+import { StyleSheet, Text, View, LogBox, Alert } from "react-native";
+import { useEffect } from "react";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 // import screens
-import Start from './components/Start';
-import Chat from './components/Chat';
+import Start from "./components/Start";
+import Chat from "./components/Chat";
 
 // import react Navigation
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 // create the naviagator
 const Stack = createNativeStackNavigator();
 
 // firebase
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, disableNetwork, enableNetwork } from "firebase/firestore";
 
 
 const App = () => {
 
   LogBox.ignoreLogs(["AsyncStorage has been extracted from"]);
 
+  const connectionStatus = useNetInfo();
 
   const firebaseConfig = {
     apiKey: "AIzaSyBn0sEeyBOu9wwobHXXSnq7h9sDaWMEBOs",
@@ -35,6 +37,15 @@ const App = () => {
 
   const db = getFirestore(app);
 
+  useEffect(() => {
+    if (connectionStatus.isConnected === false) {
+      Alert.alert("Connection Lost!");
+      disableNetwork(db);
+    } else if (connectionStatus.isConnected === true) {
+      enableNetwork(db);
+    }
+  }, [connectionStatus.isConnected]);
+
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -45,7 +56,13 @@ const App = () => {
           component={Start}
         />
         <Stack.Screen name="Chat">
-          {(props) => <Chat db={db} {...props} />}
+          {(props) => (
+            <Chat
+              db={db}
+              isConnected={connectionStatus.isConnected}
+              {...props}
+            />
+          )}
         </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
@@ -55,9 +72,9 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 

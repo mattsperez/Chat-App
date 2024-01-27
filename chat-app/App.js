@@ -16,6 +16,7 @@ const Stack = createNativeStackNavigator();
 // firebase
 import { initializeApp } from "firebase/app";
 import { getFirestore, disableNetwork, enableNetwork } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 
 const App = () => {
@@ -37,6 +38,8 @@ const App = () => {
 
   const db = getFirestore(app);
 
+  const storage = getStorage(app);
+
   useEffect(() => {
     if (connectionStatus.isConnected === false) {
       Alert.alert("Connection Lost!");
@@ -47,6 +50,8 @@ const App = () => {
   }, [connectionStatus.isConnected]);
 
   return (
+
+    
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Start"
@@ -59,6 +64,7 @@ const App = () => {
           {(props) => (
             <Chat
               db={db}
+              storage={storage}
               isConnected={connectionStatus.isConnected}
               {...props}
             />
